@@ -1,9 +1,13 @@
 import os
 import logging
+import time
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.error import Conflict, TelegramError, TimedOut, NetworkError
 import requests
 import re
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -13,7 +17,19 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
 LINKWARDEN_API_URL = os.environ.get('LINKWARDEN_API_URL')
 LINKWARDEN_API_KEY = os.environ.get('LINKWARDEN_API_KEY')
-LINKWARDEN_COLLECTION_ID = os.environ.get('LINKWARDEN_COLLECTION_ID')  # New environment variable
+LINKWARDEN_COLLECTION_ID = os.environ.get('LINKWARDEN_COLLECTION_ID')
+
+# Configure requests to retry on failure
+retry_strategy = Retry(
+    total=3,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["HEAD", "GET", "OPTIONS", "POST"],
+    backoff_factor=1
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
+http.mount("http://", adapter)
 
 def start(update: Update, context: CallbackContext) -> None:
     context.bot.send_message(chat_id=update.effective_chat.id, 
@@ -31,10 +47,9 @@ def add_to_linkwarden(url: str) -> bool:
     data = {
         'url': url,
         'collectionId': LINKWARDEN_COLLECTION_ID,
-        # Add any additional fields required by Linkwarden API
     }
     try:
-        response = requests.post(f'{LINKWARDEN_API_URL}/api/v1/links', json=data, headers=headers)
+        response = http.post(f'{LINKWARDEN_API_URL}/api/v1/links', json=data, headers=headers, timeout=10)
         response.raise_for_status()
         return True
     except requests.RequestException as e:
@@ -46,8 +61,7 @@ def handle_message(update: Update, context: CallbackContext) -> None:
     links = extract_links(message)
     
     if not links:
-        context.bot.send_message(chat_id=update.effective_chat.id, 
-                                 text="No links found in the message.")
+        send_message_with_retry(update, context, "No links found in the message.")
         return
 
     successful_links = []
@@ -63,17 +77,58 @@ def handle_message(update: Update, context: CallbackContext) -> None:
     if failed_links:
         response += "\n\nFailed to add these links:\n" + "\n".join(failed_links)
 
-    context.bot.send_message(chat_id=update.effective_chat.id, text=response)
+    send_message_with_retry(update, context, response)
+
+def send_message_with_retry(update: Update, context: CallbackContext, text: str, max_retries: int = 3) -> None:
+    for attempt in range(max_retries):
+        try:
+            context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+            return
+        except (TimedOut, NetworkError) as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Attempt {attempt + 1} failed: {e}. Retrying...")
+                time.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                logger.error(f"Failed to send message after {max_retries} attempts: {e}")
+                raise
+
+def error_handler(update: object, context: CallbackContext) -> None:
+    """Log the error and send a telegram message to notify the developer."""
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
+
+    if isinstance(context.error, (TimedOut, NetworkError)):
+        logger.info("Network error occurred. The message might have been sent despite the error.")
+    elif update and update.effective_chat:
+        try:
+            context.bot.send_message(chat_id=update.effective_chat.id, 
+                                     text="An error occurred. The developer has been notified.")
+        except Exception as e:
+            logger.error(f"Failed to send error message: {e}")
 
 def main() -> None:
-    updater = Updater(TELEGRAM_TOKEN)
+    updater = Updater(TELEGRAM_TOKEN, use_context=True)
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    dp.add_error_handler(error_handler)
 
-    updater.start_polling()
-    updater.idle()
+    while True:
+        try:
+            updater.start_polling(timeout=30, read_latency=5)
+            updater.idle()
+        except Conflict:
+            logger.error("Conflict error occurred. Waiting before restarting...")
+            time.sleep(30)
+        except (TimedOut, NetworkError) as e:
+            logger.error(f"Network error occurred: {e}. Restarting...")
+            time.sleep(10)
+        except TelegramError as e:
+            logger.error(f"TelegramError occurred: {e}. Waiting before restarting...")
+            time.sleep(30)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {e}. Exiting...")
+            break
 
 if __name__ == '__main__':
     main()
