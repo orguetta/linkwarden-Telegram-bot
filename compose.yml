@@ -1,0 +1,9 @@
+name: linkwarden-telegram-bot
+services:
+    telegram-linkwarden-service:
+        container_name: telegram-linkwarden-service
+        environment:
+            - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+            - LINKWARDEN_API_URL=${LINKWARDEN_API_URL}
+            - LINKWARDEN_API_KEY=${LINKWARDEN_API_KEY}
+        image: telegram-linkwarden-service
