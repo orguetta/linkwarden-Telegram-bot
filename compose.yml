@@ -13,37 +13,7 @@ services:
       - LINKWARDEN_API_KEY=${LINKWARDEN_API_KEY}
       - LINKWARDEN_COLLECTION_ID=${LINKWARDEN_COLLECTION_ID}
       - REDIS_URL=redis://redis:6379
-#    depends_on:
-#      - redis
     restart: unless-stopped
-
-#  worker:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    command: python worker.py
-#    networks:
-#      - linkwarden-internal
-#    environment:
-#      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
-#      - LINKWARDEN_API_URL=${LINKWARDEN_API_URL}
-#      - LINKWARDEN_API_KEY=${LINKWARDEN_API_KEY}
-#      - LINKWARDEN_COLLECTION_ID=${LINKWARDEN_COLLECTION_ID}
-#      - REDIS_URL=redis://redis:6379
-#    depends_on:
-#      - redis
-#    restart: unless-stopped
-
-#  redis:
-#    image: redis:6-alpine
-#    networks:
-#      - linkwarden-internal
-#    volumes:
-#      - redis_data:/data
-#    restart: unless-stopped
-
-#volumes:
-#  redis_data:
 
 networks:
   linkwarden-internal:
