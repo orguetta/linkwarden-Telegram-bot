@@ -1,2 +1,10 @@
 .venv/
 .env
+botold.py
+old/
+LICENSE
+README.md
+example.env
+.gitignore
+.gitattributes
+compose.yml

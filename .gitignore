@@ -161,3 +161,5 @@ cython_debug/
 
 # Docker environment file 
 .env
+botold.py
+old/

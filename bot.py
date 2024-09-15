@@ -2,12 +2,12 @@ import os
 import logging
 import time
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 from telegram.error import Conflict, TelegramError, TimedOut, NetworkError
 import requests
 import re
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -31,9 +31,9 @@ http = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
-def start(update: Update, context: CallbackContext) -> None:
-    context.bot.send_message(chat_id=update.effective_chat.id, 
-                             text="Send me a message with links, and I'll add them to Linkwarden!")
+async def start(update: Update, context: CallbackContext) -> None:
+    await context.bot.send_message(chat_id=update.effective_chat.id, 
+                                   text="Send me a message with links, and I'll add them to Linkwarden!")
 
 def extract_links(text: str) -> list:
     url_pattern = re.compile(r'https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_+.~#?&/=]*')
@@ -56,12 +56,19 @@ def add_to_linkwarden(url: str) -> bool:
         logger.error(f"Failed to add link to Linkwarden: {e}")
         return False
 
-def handle_message(update: Update, context: CallbackContext) -> None:
+async def handle_message(update: Update, context: CallbackContext) -> None:
+    # Initialize message text
     message = update.message.text
+
+    # Check if the message is forwarded
+    if hasattr(update.message, 'forward_from') or hasattr(update.message, 'forward_from_chat'):
+        # If it's forwarded, you can still use the same message text
+        message = update.message.text
+
     links = extract_links(message)
     
     if not links:
-        send_message_with_retry(update, context, "No links found in the message.")
+        await send_message_with_retry(update, context, "No links found in the message.")
         return
 
     successful_links = []
@@ -77,12 +84,12 @@ def handle_message(update: Update, context: CallbackContext) -> None:
     if failed_links:
         response += "\n\nFailed to add these links:\n" + "\n".join(failed_links)
 
-    send_message_with_retry(update, context, response)
+    await send_message_with_retry(update, context, response)
 
-def send_message_with_retry(update: Update, context: CallbackContext, text: str, max_retries: int = 3) -> None:
+async def send_message_with_retry(update: Update, context: CallbackContext, text: str, max_retries: int = 3) -> None:
     for attempt in range(max_retries):
         try:
-            context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
             return
         except (TimedOut, NetworkError) as e:
             if attempt < max_retries - 1:
@@ -92,7 +99,7 @@ def send_message_with_retry(update: Update, context: CallbackContext, text: str,
                 logger.error(f"Failed to send message after {max_retries} attempts: {e}")
                 raise
 
-def error_handler(update: object, context: CallbackContext) -> None:
+async def error_handler(update: object, context: CallbackContext) -> None:
     """Log the error and send a telegram message to notify the developer."""
     logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
@@ -100,23 +107,21 @@ def error_handler(update: object, context: CallbackContext) -> None:
         logger.info("Network error occurred. The message might have been sent despite the error.")
     elif update and update.effective_chat:
         try:
-            context.bot.send_message(chat_id=update.effective_chat.id, 
-                                     text="An error occurred. The developer has been notified.")
+            await context.bot.send_message(chat_id=update.effective_chat.id, 
+                                           text="An error occurred. The developer has been notified.")
         except Exception as e:
             logger.error(f"Failed to send error message: {e}")
 
 def main() -> None:
-    updater = Updater(TELEGRAM_TOKEN, use_context=True)
-    dp = updater.dispatcher
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-    dp.add_error_handler(error_handler)
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_error_handler(error_handler)
 
     while True:
         try:
-            updater.start_polling(timeout=30, read_latency=5)
-            updater.idle()
+            application.run_polling(timeout=10, poll_interval=10)  # Set poll_interval to 10 seconds
         except Conflict:
             logger.error("Conflict error occurred. Waiting before restarting...")
             time.sleep(30)
