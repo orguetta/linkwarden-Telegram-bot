@@ -1,0 +1,28 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Runs every Sunday at midnight
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Run Dependabot
+        uses: dependabot/fetch-metadata@v2.2.0
+      - name: Run Dependabot for pip
+        uses: dependabot/dependabot-script@v0.288.0
+        with:
+          package-ecosystem: "pip"
+          directory: "/"
+      - name: Run Dependabot for GitHub Actions
+        uses: dependabot/dependabot-core@v0.288.0
+        with:
+          package-ecosystem: "github-actions"
+          directory: "/"
