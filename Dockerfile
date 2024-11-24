@@ -1,7 +1,7 @@
 FROM python:3.9-slim
 
 # Install Redis
-RUN apt-get update && apt-get install -y redis-server
+RUN apt-get update && apt-get install -y redis-server && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
