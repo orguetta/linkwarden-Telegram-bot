@@ -8,3 +8,7 @@ example.env
 .gitignore
 .gitattributes
 compose.yml
+example.env
+SECURITY.md
+README.md
+LICENSE
