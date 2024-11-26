@@ -1,10 +1,9 @@
 name: linkwarden-telegram-bot
 services:
-  bot:
-    build:
-      context: .
-      dockerfile: Dockerfile
+
+  linkwarden-telegram-bot:
     container_name: telegram-linkwarden-bot
+    image: ghcr.io/orguetta/linkwarden-telegram-bot:latest
     networks:
       - linkwarden-internal
     environment:
@@ -12,7 +11,6 @@ services:
       - LINKWARDEN_API_URL=${LINKWARDEN_API_URL}
       - LINKWARDEN_API_KEY=${LINKWARDEN_API_KEY}
       - LINKWARDEN_COLLECTION_ID=${LINKWARDEN_COLLECTION_ID}
-      - REDIS_URL=redis://redis:6379
     restart: unless-stopped
 
 networks:

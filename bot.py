@@ -27,9 +27,9 @@ retry_strategy = Retry(
     backoff_factor=1
 )
 adapter = HTTPAdapter(max_retries=retry_strategy)
-http = requests.Session()
-http.mount("https://", adapter)
-http.mount("http://", adapter)
+with requests.Session() as http:
+    http.mount("https://", adapter)
+    http.mount("http://", adapter)
 
 async def start(update: Update, context: CallbackContext) -> None:
     await context.bot.send_message(chat_id=update.effective_chat.id, 
@@ -91,7 +91,7 @@ async def send_message_with_retry(update: Update, context: CallbackContext, text
         try:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=text)
             return
-        except (TimedOut, NetworkError) as e:
+        except TimedOut as e:
             if attempt < max_retries - 1:
                 logger.warning(f"Attempt {attempt + 1} failed: {e}. Retrying...")
                 time.sleep(2 ** attempt)  # Exponential backoff
@@ -125,7 +125,7 @@ def main() -> None:
         except Conflict:
             logger.error("Conflict error occurred. Waiting before restarting...")
             time.sleep(30)
-        except (TimedOut, NetworkError) as e:
+        except NetworkError as e:
             logger.error(f"Network error occurred: {e}. Restarting...")
             time.sleep(10)
         except TelegramError as e:

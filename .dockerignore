@@ -1,4 +1,9 @@
 .venv/
+.github/
+.git/
+.dockerignore
+Dockerfile
+docker-compose*
 .env
 LICENSE
 README.md
