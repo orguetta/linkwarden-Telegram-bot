@@ -1,9 +1,10 @@
 name: linkwarden-telegram-bot
 services:
-
-  linkwarden-telegram-bot:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: telegram-linkwarden-bot
-    image: ghcr.io/orguetta/linkwarden-telegram-bot:latest
     networks:
       - linkwarden-internal
     environment:
