@@ -1,7 +1,4 @@
-FROM python:3.9-slim
-
-# Install Redis
-RUN apt-get update && apt-get install -y redis-server && apt-get clean && rm -rf /var/lib/apt/lists/*
+FROM python:3.10-alpine
 
 # Set the working directory
 WORKDIR /app
@@ -9,14 +6,11 @@ WORKDIR /app
 # Copy requirements.txt if you have one
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# If you don't have a requirements.txt, you can install directly
-# RUN pip install --no-cache-dir python-telegram-bot>=20.0
+# Upgrade pip and setuptools, then install dependencies
+RUN pip install --upgrade pip setuptools && pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code
-COPY . .
+COPY bot.py .
 
-# Start Redis and run the bot
-CMD ["sh", "-c", "redis-server --daemonize yes && python bot.py"]
+# Start the bot
+CMD ["python", "bot.py"]

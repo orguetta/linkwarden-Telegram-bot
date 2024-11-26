@@ -1,11 +1,14 @@
-name: linkwarden-telegram-bot
+name: linkwarden
 services:
 
   linkwarden-telegram-bot:
     container_name: telegram-linkwarden-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: ghcr.io/orguetta/linkwarden-telegram-bot:latest
     networks:
-      - linkwarden-internal
+      - internal
     environment:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - LINKWARDEN_API_URL=${LINKWARDEN_API_URL}
@@ -14,4 +17,4 @@ services:
     restart: unless-stopped
 
 networks:
-  linkwarden-internal:
+  internal:
