@@ -37,4 +37,4 @@ updates:
     target-branch: "main"
     labels:
       - "dependencies"
-      - "github-actions"
+      - "github_actions"
