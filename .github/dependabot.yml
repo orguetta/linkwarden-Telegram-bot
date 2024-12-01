@@ -4,6 +4,7 @@
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 # .github/dependabot.yml
+
 version: 2
 updates:
   - package-ecosystem: "pip"
@@ -17,7 +18,7 @@ updates:
       - "dependencies"
       - "python"
 
-  - package-ecosystem: "docker" 
+  - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -31,10 +32,10 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly" 
+      interval: "weekly"
       day: "sunday"
     open-pull-requests-limit: 10
     target-branch: "main"
     labels:
       - "dependencies"
-      - "github_actions"
+      - "github-actions"
