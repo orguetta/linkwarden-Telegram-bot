@@ -3,13 +3,27 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
-version: 2
-updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    schedule:
-      interval: "weekly"
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Runs every Sunday at midnight
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Dependabot updates
+        uses: dependabot/dependabot-script
+        with:
+          package-ecosystem: "pip"
+          directory: "/"
+          schedule-interval: "weekly"
+
+      - name: Dependabot updates
+        uses: dependabot/dependabot-script
+        with:
+          package-ecosystem: "docker"
+          directory: "/"
+          schedule-interval: "weekly"
