@@ -3,27 +3,38 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
-on:
-  schedule:
-    - cron: '0 0 * * 0' # Runs every Sunday at midnight
+# .github/dependabot.yml
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "python"
 
-jobs:
-  dependabot:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+  - package-ecosystem: "docker" 
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "docker"
 
-      - name: Dependabot updates
-        uses: dependabot/dependabot-script
-        with:
-          package-ecosystem: "pip"
-          directory: "/"
-          schedule-interval: "weekly"
-
-      - name: Dependabot updates
-        uses: dependabot/dependabot-script
-        with:
-          package-ecosystem: "docker"
-          directory: "/"
-          schedule-interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly" 
+      day: "sunday"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "github-actions"
