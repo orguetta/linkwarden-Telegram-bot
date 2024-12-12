@@ -67,3 +67,34 @@ export LINKWARDEN_COLLECTION_ID=your_collection_id
 ```bash
 python bot.py
 ```
+
+## Usage
+
+### Adding Links
+
+To add a link to your Linkwarden collection, simply send a message containing the link to the bot. The bot will automatically extract the link and add it to your specified collection.
+
+### Example
+
+1. Send a message to the bot with a link:
+
+```
+Check out this cool website: https://example.com
+```
+
+2. The bot will respond with a confirmation message:
+
+```
+Links added to Linkwarden:
+https://example.com
+```
+
+### Error Handling
+
+If the bot encounters an error while adding a link, it will notify you with a message indicating the failed link and the reason for the failure.
+
+## Badges
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/linkwarden-telegram-bot/docker-publish.yml?branch=main)
+![Code Coverage](https://img.shields.io/codecov/c/github/yourusername/linkwarden-telegram-bot)
+![License](https://img.shields.io/github/license/yourusername/linkwarden-telegram-bot)
