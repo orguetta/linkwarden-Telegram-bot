@@ -48,13 +48,29 @@ def add_to_linkwarden(url: str) -> bool:
         'url': url,
         'collectionId': LINKWARDEN_COLLECTION_ID,
     }
-    try:
-        response = http.post(f'{LINKWARDEN_API_URL}/api/v1/links', json=data, headers=headers, timeout=10)
-        response.raise_for_status()
-        return True
-    except requests.RequestException as e:
-        logger.error(f"Failed to add link to Linkwarden: {e}")
-        return False
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = http.post(f'{LINKWARDEN_API_URL}/api/v1/links', json=data, headers=headers, timeout=10)
+            response.raise_for_status()
+            logger.info(f"Successfully added link to Linkwarden: {url}")
+            return True
+        except requests.exceptions.Timeout as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Attempt {attempt + 1} failed: {e}. Retrying...")
+                time.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                logger.error(f"Failed to add link after {max_retries} attempts: {e}")
+                return False
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"Connection error occurred: {e}")
+            return False
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP error occurred: {e}")
+            return False
+        except requests.RequestException as e:
+            logger.error(f"Failed to add link to Linkwarden: {e}")
+            return False
 
 async def handle_message(update: Update, context: CallbackContext) -> None:
     # Initialize message text
