@@ -78,13 +78,13 @@ To add a link to your Linkwarden collection, simply send a message containing th
 
 1. Send a message to the bot with a link:
 
-```
+```plaintext
 Check out this cool website: https://example.com
 ```
 
 2. The bot will respond with a confirmation message:
 
-```
+```plaintext
 Links added to Linkwarden:
 https://example.com
 ```

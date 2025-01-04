@@ -4,11 +4,13 @@ Thank you for considering contributing to the Linkwarden Telegram Bot project! W
 
 ## Table of Contents
 
-1. [Code of Conduct](#code-of-conduct)
-2. [How to Contribute](#how-to-contribute)
-3. [Code Style](#code-style)
-4. [Testing](#testing)
-5. [Submitting Pull Requests](#submitting-pull-requests)
+- [Contributing to Linkwarden Telegram Bot](#contributing-to-linkwarden-telegram-bot)
+  - [Table of Contents](#table-of-contents)
+  - [Code of Conduct](#code-of-conduct)
+  - [How to Contribute](#how-to-contribute)
+  - [Code Style](#code-style)
+  - [Testing](#testing)
+  - [Submitting Pull Requests](#submitting-pull-requests)
 
 ## Code of Conduct
 
@@ -19,12 +21,14 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 1. **Fork the repository**: Click the "Fork" button at the top right corner of the repository page to create a copy of the repository in your GitHub account.
 
 2. **Clone your fork**: Clone your forked repository to your local machine using the following command:
+
    ```bash
    git clone https://github.com/yourusername/linkwarden-telegram-bot.git
    cd linkwarden-telegram-bot
    ```
 
 3. **Create a new branch**: Create a new branch for your contribution. Use a descriptive name for your branch to indicate the purpose of your changes.
+
    ```bash
    git checkout -b my-feature-branch
    ```
@@ -32,17 +36,22 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 4. **Make your changes**: Implement your changes in the new branch. Ensure that your code follows the [Code Style](#code-style) guidelines and includes appropriate tests.
 
 5. **Commit your changes**: Commit your changes with a clear and concise commit message.
+6. 
+
    ```bash
    git add .
    git commit -m "Add feature: description of your feature"
    ```
 
-6. **Push your changes**: Push your changes to your forked repository.
+7. 
+   **Push your changes**: Push your changes to your forked repository.
+
    ```bash
    git push origin my-feature-branch
    ```
 
-7. **Create a pull request**: Open a pull request (PR) from your forked repository to the main repository. Provide a detailed description of your changes and any relevant information.
+8. 
+   **Create a pull request**: Open a pull request (PR) from your forked repository to the main repository. Provide a detailed description of your changes and any relevant information.
 
 ## Code Style
 
@@ -59,12 +68,14 @@ Please follow the code style guidelines below to ensure consistency and readabil
 We use `pytest` for testing. Please ensure that your changes include appropriate tests and that all tests pass before submitting a pull request.
 
 1. **Install dependencies**: Install the required dependencies for testing.
+
    ```bash
    pip install -r requirements.txt
    pip install pytest
    ```
 
 2. **Run tests**: Run the tests to ensure that your changes do not introduce any regressions.
+
    ```bash
    pytest
    ```
